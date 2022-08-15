@@ -1,6 +1,6 @@
 package diacritics
 
-var d = map[string]string{
+var skDiacritics = map[string]string{
 	"á":  "a",
 	"ä":  "a",
 	"č":  "c",
@@ -39,13 +39,23 @@ var d = map[string]string{
 	"Ž":  "Z",
 }
 
-// Replace replaces character with diacritics with it's non-diacritic alternative or returns the character.
+// Replace replaces characters with diacritics in a string with it's non-diacritic alternative.
 // e.g. `á` is replaced with `a`, but `b` just returns `b`
 func Replace(s string) string {
-	replaced := d[s]
+	replaced := ""
 
-	if len(replaced) == 0 {
-		return s
+	for _, char := range s {
+
+		charS := string(char)
+		noDiacritic := skDiacritics[charS]
+
+		if len(noDiacritic) == 0 {
+			// keep the original char, if it did not have any diacritics
+			replaced += charS
+		} else {
+			// replace the diacritic char
+			replaced += noDiacritic
+		}
 	}
 
 	return replaced

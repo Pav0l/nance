@@ -43,6 +43,8 @@ func TestReplace(t *testing.T) {
 		{"Ú", "T"},
 		{"Ý", "Y"},
 		{"Ž", "Z"},
+		{"áŽÍksX", "aZIksX"},
+		{"TŤ Ík,sX.com", "TT Ik,sX.com"},
 		// no diacritics
 		{"b", "b"},
 		{" ", " "},
@@ -53,6 +55,7 @@ func TestReplace(t *testing.T) {
 	for _, testcase := range testcases {
 		res := Replace(testcase.receive)
 		if res != testcase.expect {
+			t.Log("failed:", testcase.receive, "expected", testcase.expect, "received", res)
 			t.Fail()
 		}
 	}
