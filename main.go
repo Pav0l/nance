@@ -47,7 +47,6 @@ func main() {
 
 		categorized := c.Categorize(partner, category)
 
-		// date, sum, partner, category(original), category(new), reviewManually
-		w.Write([]string{row[0], row[1], diacritics.Replace(partner), category, diacritics.Replace(categorized.Target), categorized.ReviewManually})
+		w.Write(append(row, diacritics.Replace(categorized.Target), categorized.ReviewManually))
 	}
 }
