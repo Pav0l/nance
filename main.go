@@ -8,6 +8,7 @@ import (
 
 	"github.com/Pav0l/nance/categorize"
 	"github.com/Pav0l/nance/diacritics"
+	"github.com/Pav0l/nance/transform"
 )
 
 func main() {
@@ -18,7 +19,7 @@ func main() {
 	}
 
 	reader := csv.NewReader(bytes.NewReader(data))
-	record, err := reader.ReadAll()
+	rows, err := reader.ReadAll()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -31,19 +32,22 @@ func main() {
 	defer file.Close()
 	w := csv.NewWriter(file)
 
+	transformer := transform.NewTransformer()
+	rows = transformer.RemoveUnnecessaryColumns(rows)
+
 	// Prepare Header row
-	targetHeader := append(record[0], "category", "reviewManually")
-	w.Write(targetHeader)
+	header := append(rows[0], "Category", "Review Manually")
+	w.Write(header)
 	defer w.Flush()
 
 	// Iterate over every data row (excluding header) and categorize, sanitize it and write it to target file
-	rowCount := len(record)
 	c := categorize.NewClassifier()
-	for i := 1; i < rowCount; i++ {
-		row := record[i]
+	for i := 1; i < len(rows); i++ {
+		row := rows[i]
 
+		// I don't like this - it infers header indexes to be specific value which we do not validate anywhere
 		partner := row[2]
-		category := row[3]
+		category := row[4]
 
 		categorized := c.Categorize(partner, category)
 
