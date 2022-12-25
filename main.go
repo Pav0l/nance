@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/csv"
+	"fmt"
 	"log"
 	"os"
 
@@ -12,6 +13,18 @@ import (
 )
 
 func main() {
+
+	spender := ""
+	fmt.Print("Enter spender (P/L): ")
+	_, err := fmt.Scanln(&spender)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if spender != "P" && spender != "L" {
+		log.Fatalf("Invalid spender. Expected: P/L. Received: %s", spender)
+	}
+
 	// Read the source CSV file that we want to sanitize and categorize
 	data, err := os.ReadFile("source.csv")
 	if err != nil {
@@ -36,7 +49,7 @@ func main() {
 	rows = transformer.RemoveUnnecessaryColumns(rows)
 
 	// Prepare Header row
-	header := append(rows[0], "Category", "Review Manually")
+	header := append(rows[0], "Category", "Spender", "Review Manually")
 	w.Write(header)
 	defer w.Flush()
 
@@ -51,6 +64,6 @@ func main() {
 
 		categorized := c.Categorize(partner, category)
 
-		w.Write(append(row, diacritics.Replace(categorized.Target), categorized.ReviewManually))
+		w.Write(append(row, diacritics.Replace(categorized.Target), spender, categorized.ReviewManually))
 	}
 }
