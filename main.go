@@ -32,7 +32,7 @@ func main() {
 	defer file.Close()
 	w := csv.NewWriter(file)
 
-	transformer := transform.NewTransformer()
+	transformer := transform.NewTransformer("headers.json")
 	rows = transformer.RemoveUnnecessaryColumns(rows)
 
 	// Prepare Header row
@@ -41,7 +41,7 @@ func main() {
 	defer w.Flush()
 
 	// Iterate over every data row (excluding header) and categorize, sanitize it and write it to target file
-	c := categorize.NewClassifier()
+	c := categorize.NewClassifier("categories.json")
 	for i := 1; i < len(rows); i++ {
 		row := rows[i]
 

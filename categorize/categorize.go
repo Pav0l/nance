@@ -1,10 +1,6 @@
 package categorize
 
-import (
-	"encoding/json"
-	"log"
-	"os"
-)
+import "github.com/Pav0l/nance/lib/json"
 
 type result struct {
 	Target         string
@@ -15,9 +11,10 @@ type Categorize struct {
 	categories map[string]string
 }
 
-func NewClassifier() *Categorize {
+// NewClassifier takes in file name of categories map which is used to catogirize inputs
+func NewClassifier(categoriesFileName string) *Categorize {
 	// read the categories JSON file only once and store it in memory
-	categories := readCategories()
+	categories := json.ReadFile(categoriesFileName)
 
 	return &Categorize{
 		categories: categories,
@@ -42,25 +39,4 @@ func (c *Categorize) Categorize(partner, originalCategory string) result {
 		Target:         categorized,
 		ReviewManually: "0",
 	}
-}
-
-func readCategories() map[string]string {
-	wd, err := os.Getwd()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	fp := wd + "/categorize/categories.json"
-
-	data, err := os.ReadFile(fp)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	categories := map[string]string{}
-	err = json.Unmarshal(data, &categories)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	return categories
 }

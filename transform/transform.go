@@ -1,14 +1,17 @@
 package transform
 
-import "log"
+import (
+	"log"
+
+	"github.com/Pav0l/nance/lib/json"
+)
 
 type Transform struct {
 	supportedHeaders map[string]string
 }
 
-func NewTransformer() *Transform {
-	supportedHeaders := map[string]string{
-		"Dátum splatnosti": "Date", "Suma": "Sum", "Partner": "Partner", "Poznámka": "Note", "Kategória": "Original Category"}
+func NewTransformer(headersFileName string) *Transform {
+	supportedHeaders := json.ReadFile(headersFileName)
 
 	return &Transform{
 		supportedHeaders: supportedHeaders,
