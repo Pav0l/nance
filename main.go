@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/Pav0l/nance/categorize"
-	"github.com/Pav0l/nance/diacritics"
 	"github.com/Pav0l/nance/transform"
 )
 
@@ -44,26 +43,13 @@ func main() {
 	}
 	defer file.Close()
 	w := csv.NewWriter(file)
-
-	transformer := transform.NewTransformer("headers.json")
-	rows = transformer.RemoveUnnecessaryColumns(rows)
-
-	// Prepare Header row
-	header := append(rows[0], "Category", "Spender", "Review Manually")
-	w.Write(header)
 	defer w.Flush()
 
-	// Iterate over every data row (excluding header) and categorize, sanitize it and write it to target file
-	c := categorize.NewClassifier("categories.json")
-	for i := 1; i < len(rows); i++ {
-		row := rows[i]
+	transformer := transform.NewTransformer("headers.json", *categorize.NewClassifier("categories.json"))
+	rows = transformer.RemoveUnnecessaryColumns(rows)
 
-		// I don't like this - it infers header indexes to be specific value which we do not validate anywhere
-		partner := row[2]
-		category := row[4]
-
-		categorized := c.Categorize(partner, category)
-
-		w.Write(append(row, diacritics.Replace(categorized.Target), spender, categorized.ReviewManually))
+	// Iterate over every data row and categorize, sanitize it and write it to target file
+	for i := 0; i < len(rows); i++ {
+		w.Write(transformer.AppendToRow(rows[i], i == 0, spender))
 	}
 }

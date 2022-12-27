@@ -3,18 +3,24 @@ package transform
 import (
 	"log"
 
+	"github.com/Pav0l/nance/categorize"
+	"github.com/Pav0l/nance/diacritics"
 	"github.com/Pav0l/nance/lib/json"
 )
 
 type Transform struct {
 	supportedHeaders map[string]string
+	c                categorize.Categorize
+	hadSpenderAlrdy  bool
 }
 
-func NewTransformer(headersFileName string) *Transform {
-	supportedHeaders := json.ReadFile(headersFileName)
+func NewTransformer(headers string, categories categorize.Categorize) *Transform {
+	supportedHeaders := json.ReadFile(headers)
 
 	return &Transform{
 		supportedHeaders: supportedHeaders,
+		c:                categories,
+		hadSpenderAlrdy:  false,
 	}
 }
 
@@ -30,6 +36,34 @@ func (t *Transform) RemoveUnnecessaryColumns(rows [][]string) [][]string {
 	}
 
 	return rows
+}
+
+func (t *Transform) AppendToRow(row []string, isHeader bool, spender string) []string {
+	if isHeader {
+		return t.appendToHeader(row)
+	}
+
+	// I don't like this - it infers header indexes to be specific value which we do not validate anywhere
+	partner := row[2]
+	category := row[4]
+
+	categorized := t.c.Categorize(partner, category)
+
+	if !t.hadSpenderAlrdy {
+		row = append(row, spender)
+	}
+	return append(row, diacritics.Replace(categorized.Target), categorized.ReviewManually)
+}
+
+func (t *Transform) appendToHeader(header []string) []string {
+	t.hadSpenderAlrdy = header[len(header)-1] == "Spender"
+
+	if !t.hadSpenderAlrdy {
+		header = append(header, "Spender")
+	}
+
+	header = append(header, "Category", "Review Manually")
+	return header
 }
 
 func (t *Transform) rebuildRow(original []string, rowIndexesToKeep []int8) []string {
