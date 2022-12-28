@@ -50,6 +50,12 @@ func main() {
 
 	// Iterate over every data row and categorize, sanitize it and write it to target file
 	for i := 0; i < len(rows); i++ {
-		w.Write(transformer.AppendToRow(rows[i], i == 0, spender))
+		row := transformer.AppendToRow(rows[i], i == 0, spender)
+		if len(row) == 0 {
+			// skip empty rows
+			continue
+		}
+
+		w.Write(row)
 	}
 }

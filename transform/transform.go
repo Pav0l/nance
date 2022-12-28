@@ -43,6 +43,12 @@ func (t *Transform) AppendToRow(row []string, isHeader bool, spender string) []s
 		return t.appendToHeader(row)
 	}
 
+	// remove zero sum rows
+	sum := row[1]
+	if sum == "0,00" {
+		return []string{}
+	}
+
 	// I don't like this - it infers header indexes to be specific value which we do not validate anywhere
 	partner := row[2]
 	category := row[4]
